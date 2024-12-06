@@ -95,42 +95,79 @@ public:
      */
     virtual void add(T vertex) {
         //TODO
+        nodeList.add(vertex);
     }
     virtual bool contains(T vertex){
         //TODO
+        return nodeList.contains(vertex);
     }
     virtual float weight(T from, T to){
         //TODO
+        VertexNode* from_node = nodeList.get(nodeList.indexOf(from));
+        VertexNode* to_node =  nodeList.get(nodeList.indexOf(to));
+        Edge* connect_edge = from_node->getEdge(to_node);
+        if (connect_edge) {
+            return connect_edge->weight;
+        }
+        return -1.0;
     }
     virtual DLinkedList<T> getOutwardEdges(T from){
         //TODO
+        VertexNode* from_node = nodeList.get(nodeList.indexOf(from));
+        return from_node->getOutwardEdges();
     }
     
     virtual DLinkedList<T>  getInwardEdges(T to){
         //TODO
+        VertexNode* to_node =  nodeList.get(nodeList.indexOf(to));
+        DLinkedList<T> inward_edges;
+        for (node : nodeList){
+            if (node->getEdge(to_node)){
+                inward_edges.add(node->getVertex());
+            }
+        }
+        return inward_edges;
     }
     
     virtual int size() {
         //TODO
+        return nodeList.size();
     }
     virtual bool empty(){
         //TODO
+        return nodeList.empty();
     };
     virtual void clear(){
         //TODO
+        nodeList.clear();
     }
     virtual int inDegree(T vertex){
         //TODO
+        VertexNode* to_node =  nodeList.get(nodeList.indexOf(vertex));
+        return to_node->inDegree();
     }
     virtual int outDegree(T vertex){
         //TODO
+        VertexNode* from_node = nodeList.get(nodeList.indexOf(vertex));
+        return from_node->outDegree();
     }
     
     virtual DLinkedList<T> vertices(){
         //TODO
+        DLinkedList<T> vertices;
+        for (node : nodeList){
+            vertices.add(node->getVertex());
+        }
     }
     virtual bool connected(T from, T to){
         //TODO
+        VertexNode* from_node = nodeList.get(nodeList.indexOf(from));
+        VertexNode* to_node =  nodeList.get(nodeList.indexOf(to));
+        Edge* connect_edge = from_node->getEdge(to_node);
+        if (connect_edge) {
+            return true;
+        }
+        return false;
     }
     void println(){
         cout << this->toString() << endl;
@@ -218,26 +255,53 @@ public:
         }
         void connect(VertexNode* to, float weight=0){
             //TODO
+            Edge* connect_edge = this->getEdge(to);
+            if (connect_edge){
+                connect_edge->weight = weight;
+            }
+            else{
+                connect_edge = new Edge(this, to, weight);
+                adList.add(connect_edge);
+                ++this->outDegree_;
+                ++to->inDegree_;
+            }
         }
         DLinkedList<T> getOutwardEdges(){
             //TODO
+            DLinkedList<T> outward_edges;
+            for (edge : adList){
+                outward_edges.add(edge->to->getVertex());
+            }
+            return outward_edges;
         }
 
         Edge* getEdge(VertexNode* to){
             //TODO
+            for (edge : adList){
+                if (equals(edge->to, to)) return edge;
+            }
+            return NULL;
         }
         bool equals(VertexNode* node){
             //TODO
+            if (vertexEQ) return vertexEQ(this->vertex, node->vertex);
+            return (this->vertex == node->vertex);
         }
         
         void removeTo(VertexNode* to){
             //TODO
+            Edge* connect_edge = this->getEdge(to);
+            if (connect_edge){
+                adList.removeItem(connect_edge);
+            }
         }
         int inDegree(){
             //TODO
+            return this->inDegree_;
         }
         int outDegree(){
             //TODO
+            return this->outDegree_;
         }
         string toString(){
             stringstream os;
@@ -269,6 +333,8 @@ public:
         
         bool equals(Edge* edge){
             //TODO
+            if (!edge) return false;
+            return (this->from->equals(edge->from) and this->to->equals(edge->to));
         }
 
         static bool edgeEQ(Edge*& edge1, Edge*& edge2){
