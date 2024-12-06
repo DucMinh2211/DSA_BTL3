@@ -14,11 +14,11 @@
 #ifndef DGRAPHMODEL_H
 #define DGRAPHMODEL_H
 #include "graph/AbstractGraph.h"
-#include "stacknqueue/Queue.h"
-#include "stacknqueue/Stack.h"
-#include "hash/XHashMap.h"
-#include "stacknqueue/PriorityQueue.h"
-#include "sorting/DLinkedListSE.h"
+#include <queue>
+#include <stack>
+#include "hash/xmap.h"
+// #include "stacknqueue/PriorityQueue.h"
+// #include "sorting/DLinkedListSE.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -38,12 +38,29 @@ public:
     
     void connect(T from, T to, float weight=0){
         //TODO
+        typename VertexNode* from_node = this->getVertexNode(from);
+        typename VertexNode* to_node = this->getVertexNode(to);
+        if (!from_node or !to_node) throw VertexNotFoundException();
+        from_node->connect(to_node, weight);
     }
     void disconnect(T from, T to){
         //TODO
+        typename VertexNode* from_node = this->getVertexNode(from);
+        typename VertexNode* to_node = this->getVertexNode(to);
+        if (!from_node or !to_node) throw VertexNotFoundException();
+        Edge* connect_edge = from_node->getEdge(to_node);
+        if (!connect_edge) throw EdgeNotFoundException();
+        from_node->removeTo(to_node);
     }
     void remove(T vertex){
         //TODO
+        typename VertexNode* rmv_node = this->getVertexNode(vertex);
+        if (!rmv_node) throw VertexNotFoundException();
+        for (typename VertexNode node : this->nodeList) {
+            node->removeTo(rmv_node);
+            rmv_node->removeTo(node);
+        }
+        this->nodeList.removeItem(rmv_node);
     }
     
     static DGraphModel<T>* create(
@@ -51,6 +68,17 @@ public:
             bool (*vertexEQ)(T&, T&),
             string (*vertex2str)(T&)){
         //TODO
+        DGraphModel<T>* graph = new DGraphModel<T>(vertexEQ, vertex2str);
+
+        for (int i = 0; i < nvertices; ++i) {
+            graph->add(vertices[i]);
+        }
+
+        for (int i = 0; i < nedges; ++i) {
+            graph->connect(edges[i].from, edges[i].to, edges[i].weight);
+        }
+
+        return graph;
     }
 };
 
