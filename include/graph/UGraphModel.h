@@ -38,10 +38,29 @@ public:
     void connect(T from, T to, float weight = 0)
     {
         // TODO
+        typename VertexNode* from_node = this->getVertexNode(from);
+        typename VertexNode* to_node = this->getVertexNode(to);
+        if (!from_node or !to_node) throw VertexNotFoundException();
+        from_node->connect(to_node, weight);
+        to_node->connect(from_node, weight);
     }
     void disconnect(T from, T to)
     {
         // TODO
+		typename VertexNode* from_node = this->getVertexNode(from);
+        typename VertexNode* to_node = this->getVertexNode(to);
+        if (!from_node or !to_node) throw VertexNotFoundException();
+        if (from_node->equals(to_node)) {
+        	Edge* connect_edge = from_node->getEdge(to_node);
+        	if (!connect_edge) throw EdgeNotFoundException();
+        	from_node->removeTo(to_node);
+        	return;
+        }
+        Edge* from_edge = from_node->getEdge(to_node);
+        Edge* to_edge = to_node->getEdge(from_node);
+        if (!from_edge or !to_edge) throw EdgeNotFoundException();
+        from_node->removeTo(to_node);
+        to_node->removeTo(from_node);
     }
     void remove(T vertex)
     {
