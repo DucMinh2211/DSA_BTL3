@@ -61,6 +61,15 @@
     "bit": "cpp",
     "*.tcc": "cpp",
     "istream": "cpp",
-    "functional": "cpp"
+    "functional": "cpp",
+    "array": "cpp",
+    "charconv": "cpp",
+    "compare": "cpp",
+    "complex": "cpp",
+    "ratio": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp",
+    "variant": "cpp"
   }
 }
