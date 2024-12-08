@@ -167,15 +167,24 @@ Heap<T>::Heap(
         int (*comparator)(T&, T&), 
         void (*deleteUserData)(Heap<T>* ) ){
     //YOUR CODE IS HERE
+    this->comparator = comparator;
+    this->deleteUserData = deleteUserData;
+    capacity = 10;
+    count = 0;
+    elements = new T[capacity];
 }
 template<class T>
 Heap<T>::Heap(const Heap<T>& heap){
     //YOUR CODE IS HERE
+    copyFrom(heap);
 }
 
 template<class T>
 Heap<T>& Heap<T>::operator=(const Heap<T>& heap){
     //YOUR CODE IS HERE
+    if (this == &heap) return *this;
+    removeInternalData();
+    copyFrom(heap);
     return *this;
 }
 
@@ -183,11 +192,16 @@ Heap<T>& Heap<T>::operator=(const Heap<T>& heap){
 template<class T>
 Heap<T>::~Heap(){
     //YOUR CODE IS HERE
+    removeInternalData();
 }
 
 template<class T>
 void Heap<T>::push(T item){ //item  = 25
     //YOUR CODE IS HERE
+    ensureCapacity(count+1);
+    elements[count] = item;
+    reheapUp(count);
+    count++;
 }
 /*
       18
@@ -208,6 +222,14 @@ void Heap<T>::push(T item){ //item  = 25
 template<class T>
 T Heap<T>::pop(){
     //YOUR CODE IS HERE
+    if (count == 0) {
+        throw std::underflow_error("Calling to peek with the empty heap.");
+    }
+    T item = elements[0];
+    elements[0] = elements[count-1];
+    reheapDown(0);
+    count--;
+    return item;
 }
 
 /*
@@ -224,37 +246,57 @@ T Heap<T>::pop(){
 template<class T>
 const T Heap<T>::peek(){
     //YOUR CODE IS HERE
+    return elements[0];
 }
 
 
 template<class T>
 void Heap<T>::remove(T item, void (*removeItemData)(T)){
     //YOUR CODE IS HERE
+    int idx = getItem(item);
+    if (idx == -1) return;
+    if (removeItemData != NULL) 
+        removeItemData(elements[idx]); 
+    elements[idx] = elements[--count];
+    reheapDown(idx);
+    reheapUp(idx);
 }
 
 template<class T>
 bool Heap<T>::contains(T item){
     //YOUR CODE IS HERE
+    for (int i = 0; i < count; i++){
+        if (elements[i] == item) return true;
+    }
+    return false;
 }
 
 template<class T>
 int Heap<T>::size(){
     //YOUR CODE IS HERE
+    return count;
 }
 
 template<class T>
 void Heap<T>::heapify(T array[], int size){
     //YOUR CODE IS HERE
+    for (int i = 0; i < size; i++){
+        push(array[i]);
+    }
 }
 
 template<class T>
 void Heap<T>::clear(){
     //YOUR CODE IS HERE
+    removeInternalData();
+    capacity = 10;
+    elements = new T[capacity];
 }
 
 template<class T>
 bool Heap<T>::empty(){
     //YOUR CODE IS HERE
+    return (count == 0);
 }
 
 template<class T>
@@ -311,16 +353,54 @@ void Heap<T>::swap(int a, int b){
 template<class T>
 void Heap<T>::reheapUp(int position){
     //YOUR CODE IS HERE
+    int parentIndex = (position - 1) / 2;  // Vị trí của cha
+
+    // Lặp cho đến khi index là gốc hoặc không cần hoán đổi
+    while (position > 0 and aLTb(elements[position], elements[parentIndex])) {
+        // Hoán đổi phần tử hiện tại với phần tử cha
+        swap(position, parentIndex);
+
+        // Di chuyển lên vị trí cha
+        position = parentIndex;
+        parentIndex = (position - 1) / 2;
+    }
 }
 
 template<class T>
 void Heap<T>::reheapDown(int position){
     //YOUR CODE IS HERE
+    int leftChild, rightChild, tmpChild;
+
+    while (position < count / 2) {  // Chạy đến khi index là nút lá
+        leftChild = 2 * position + 1;    // Vị trí con trái
+        rightChild = 2 * position + 2;   // Vị trí con phải
+        tmpChild = leftChild;      // Giả sử con trái là lớn hơn
+
+        // Kiểm tra nếu con phải lớn hơn con trái
+        if (rightChild < count and aLTb(elements[rightChild], elements[leftChild]) ) {
+            tmpChild = rightChild;
+        }
+
+        // Nếu phần tử hiện tại lớn hơn hoặc bằng phần tử con lớn hơn, dừng lại
+        if (aLTb(elements[position], elements[tmpChild])) {
+            break;
+        }
+
+        // Hoán đổi phần tử hiện tại với phần tử con lớn hơn
+        swap(position, tmpChild);
+
+        // Di chuyển xuống vị trí con
+        position = tmpChild;
+    }
 }
 
 template<class T>
 int Heap<T>::getItem(T item){
     //YOUR CODE IS HERE
+    for (int i = 0; i < count; i++){
+        if (elements[i] == item) return i;
+    }
+    return -1;
 }
 
 template<class T>
