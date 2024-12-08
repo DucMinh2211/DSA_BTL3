@@ -72,8 +72,9 @@ public:
 		typename DLinkedList<T>::Iterator it = this->list.begin();
 		for (it; it != list.end(); ++it){
 			if (equals(*it, item, itemEqual)) it.remove();
+			return true;
 		}
-		return true;
+		return false;
 	}
 	bool contains(T item){
 		//TODO: check if the item is in the queue
